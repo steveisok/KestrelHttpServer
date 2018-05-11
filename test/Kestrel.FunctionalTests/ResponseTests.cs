@@ -2460,7 +2460,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 context.Response.ContentLength = responseBodySize;
 
-
                 try
                 {
                     for (var i = 0; i < responseBodySegmentCount; i++)
@@ -2479,23 +2478,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.Send(
-                        "POST / HTTP/1.1",
+                        "GET / HTTP/1.1",
                         "Host:",
-                        $"Content-Length: {responseBodySize}",
                         "",
                         "");
 
                     var readCount = 0;
 
-                    // Read just part of the response and close the connection. Delay to better repro
+                    // Read just part of the response and close the connection.
                     // https://github.com/aspnet/KestrelHttpServer/issues/2554
-                    for (var i = 0; i < 10; i++)
+                    for (var i = 0; i < responseBodySegmentCount / 256; i++)
                     {
                         readCount += await connection.Stream.ReadAsync(scratchBuffer, 0, scratchBuffer.Length);
-                        await Task.Delay(100);
                     }
 
-                    connection.Socket.Shutdown(SocketShutdown.Receive);
+                    connection.Socket.Shutdown(SocketShutdown.Send);
 
                     await appCompletedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
                 }

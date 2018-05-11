@@ -1217,7 +1217,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             const int connectionFinSentEventId = 7;
             const int maxRequestBufferSize = 2048;
 
-            var requestAborted = false;
             var readCallbackUnwired = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
             var clientClosedConnection = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
             var serverClosedConnection = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
@@ -1276,11 +1275,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var server = new TestServer(async context =>
             {
-                context.RequestAborted.Register(() =>
-                {
-                    requestAborted = true;
-                });
-
                 await clientClosedConnection.Task;
 
                 context.Abort();
@@ -1311,14 +1305,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
-            Assert.True(requestAborted);
         }
 
         [Theory]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
         {
-            var requestAborted = false;
             var readTcs = new TaskCompletionSource<Exception>(TaskContinuationOptions.RunContinuationsAsynchronously);
 
             var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
@@ -1331,11 +1323,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var server = new TestServer(async context =>
             {
-                context.RequestAborted.Register(() =>
-                {
-                    requestAborted = true;
-                });
-
                 try
                 {
                     await context.Request.Body.CopyToAsync(Stream.Null);;
@@ -1366,7 +1353,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
-            Assert.True(requestAborted);
         }
 
         [Theory]
