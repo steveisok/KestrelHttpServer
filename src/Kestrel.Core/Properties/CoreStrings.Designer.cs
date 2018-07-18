@@ -2002,6 +2002,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2StreamAborted()
             => GetString("Http2StreamAborted");
 
+        /// <summary>
+        /// The client sent more data than what was available in the flow-control window.
+        /// </summary>
+        internal static string Http2ErrorFlowControlWindowExceeded
+        {
+            get => GetString("Http2ErrorFlowControlWindowExceeded");
+        }
+
+        /// <summary>
+        /// The client sent more data than what was available in the flow-control window.
+        /// </summary>
+        internal static string FormatHttp2ErrorFlowControlWindowExceeded()
+            => GetString("Http2ErrorFlowControlWindowExceeded");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
