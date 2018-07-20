@@ -52,6 +52,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnRequestProcessingEnded()
         {
+            RequestBodyPipe.Reader.Complete();
+            RequestBodyPipe.Writer.Complete();
             _context.StreamLifetimeHandler.OnStreamCompleted(StreamId);
         }
 
@@ -155,13 +157,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if ((dataFrame.DataFlags & Http2DataFrameFlags.END_STREAM) == Http2DataFrameFlags.END_STREAM)
             {
-                OnEndStream();
+                OnEndStreamReceived();
             }
 
             return Task.CompletedTask;
         }
 
-        public void OnEndStream()
+        public void OnEndStreamReceived()
         {
             EndStreamReceived = true;
             RequestBodyPipe.Writer.Complete();
